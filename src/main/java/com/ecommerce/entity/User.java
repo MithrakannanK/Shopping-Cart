@@ -1,25 +1,32 @@
 package com.ecommerce.entity;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Generated;
+/*import jakarta.persistence.Generated;*/
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
-@Enitity
+@Entity
 @Table(name="users")
-public class User {
+public class User implements UserDetails {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id //primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //for auto genareration
     private Long id;
 
     @NotBlank(message = "Username is required")
@@ -28,7 +35,7 @@ public class User {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Email(message = "Email should be valid" )
+    @Email(message = "Email should be valid" ) //this for checking email format
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -63,12 +70,36 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
     public User(String username, String email, String password, String firstName, String lastName) {
-        this();
+        this(); //calling  the non parameterized constructor from the own class
         this.username = username;
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+    
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
     // Getters and Setters
     
@@ -132,7 +163,7 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
-    public enum Role {
+    public enum Role { // when we need fixed choice (like in dropdowns)
         USER,                   //normal user
         ADMIN
     }
